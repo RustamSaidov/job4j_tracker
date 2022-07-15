@@ -1,0 +1,175 @@
+package ru.job4j.tracker;
+
+import ru.job4j.tracker.model.Item;
+
+import java.io.InputStream;
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringJoiner;
+
+public class SqlTracker implements Store, AutoCloseable {
+
+    private Connection cn;
+
+    public void init() {
+        try (InputStream in = SqlTracker.class.getClassLoader().getResourceAsStream("app.properties")) {
+            Properties config = new Properties();
+            config.load(in);
+            Class.forName(config.getProperty("driver-class-name"));
+            cn = DriverManager.getConnection(
+                    config.getProperty("url"),
+                    config.getProperty("username"),
+                    config.getProperty("password")
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (cn != null) {
+            cn.close();
+        }
+    }
+
+    @Override
+    public Item add(Item item) {
+        try (PreparedStatement statement =
+                     cn.prepareStatement("insert into items(name, created) values (?, ?)",
+                             Statement.RETURN_GENERATED_KEYS)) {
+            statement.setString(1, item.getName());
+            long millis = System.currentTimeMillis();
+            Timestamp timestamp = new Timestamp(millis);
+            LocalDateTime localDateTime = timestamp.toLocalDateTime();
+            statement.setTimestamp(2, Timestamp.valueOf(localDateTime));
+            statement.execute();
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    item.setId(generatedKeys.getInt(1));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return item;
+    }
+
+    @Override
+    public boolean replace(int id, Item item) {
+        boolean result = false;
+        try (PreparedStatement statement =
+                     cn.prepareStatement("update items set name = ?, created = ? where id = ?")) {
+            statement.setString(1, item.getName());
+            long millis = System.currentTimeMillis();
+            Timestamp timestamp = new Timestamp(millis);
+            LocalDateTime localDateTime = timestamp.toLocalDateTime();
+            statement.setTimestamp(2, Timestamp.valueOf(localDateTime));
+            statement.setInt(3, item.getId());
+            result = statement.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public boolean delete(int id) {
+        boolean result = false;
+        try (PreparedStatement statement =
+                     cn.prepareStatement("delete from items where id = ?")) {
+            statement.setInt(1, id);
+            result = statement.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public List<Item> findAll() {
+        List<Item> items = new ArrayList<>();
+        try (PreparedStatement statement = cn.prepareStatement("select * from items")) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    items.add(new Item(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getTimestamp("created").toLocalDateTime()
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return items;
+    }
+
+    @Override
+    public List<Item> findByName(String key) {
+        List<Item> items = new ArrayList<>();
+        try (PreparedStatement statement = cn.prepareStatement("select * from items WHERE name = ?")) {
+            statement.setString(1, key);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    items.add(new Item(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getTimestamp("created").toLocalDateTime()
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return items;
+    }
+
+    @Override
+    public Item findById(int id) {
+        Item item = null;
+        try (PreparedStatement statement = cn.prepareStatement("select * from items WHERE id = ?")) {
+            statement.setInt(1, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                    item = new Item(
+                            resultSet.getInt("id"),
+                            resultSet.getString("name"),
+                            resultSet.getTimestamp("created").toLocalDateTime()
+                    );
+                }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return item;
+    }
+
+    public void executeQuery(String tableName, String sql, Connection connection) {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute(sql);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String getTableScheme(Connection connection, String tableName) throws Exception {
+        var rowSeparator = "-".repeat(30).concat(System.lineSeparator());
+        var header = String.format("%-15s|%-15s%n", "NAME", "TYPE");
+        var buffer = new StringJoiner(rowSeparator, rowSeparator, rowSeparator);
+        buffer.add(header);
+        try (var statement = connection.createStatement()) {
+            var selection = statement.executeQuery(String.format(
+                    "select * from %s limit 1", tableName
+            ));
+            var metaData = selection.getMetaData();
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                buffer.add(String.format("%-15s|%-15s%n",
+                        metaData.getColumnName(i), metaData.getColumnTypeName(i))
+                );
+            }
+        }
+        return buffer.toString();
+    }
+}
