@@ -68,7 +68,7 @@ public class SqlTracker implements Store, AutoCloseable {
             Timestamp timestamp = new Timestamp(millis);
             LocalDateTime localDateTime = timestamp.toLocalDateTime();
             statement.setTimestamp(2, Timestamp.valueOf(localDateTime));
-            statement.setInt(3, item.getId());
+            statement.setInt(3, id);
             result = statement.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -134,42 +134,17 @@ public class SqlTracker implements Store, AutoCloseable {
         try (PreparedStatement statement = cn.prepareStatement("select * from items WHERE id = ?")) {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
                     item = new Item(
                             resultSet.getInt("id"),
                             resultSet.getString("name"),
                             resultSet.getTimestamp("created").toLocalDateTime()
                     );
                 }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return item;
-    }
-
-    public void executeQuery(String tableName, String sql, Connection connection) {
-        try (Statement statement = connection.createStatement()) {
-            statement.execute(sql);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String getTableScheme(Connection connection, String tableName) throws Exception {
-        var rowSeparator = "-".repeat(30).concat(System.lineSeparator());
-        var header = String.format("%-15s|%-15s%n", "NAME", "TYPE");
-        var buffer = new StringJoiner(rowSeparator, rowSeparator, rowSeparator);
-        buffer.add(header);
-        try (var statement = connection.createStatement()) {
-            var selection = statement.executeQuery(String.format(
-                    "select * from %s limit 1", tableName
-            ));
-            var metaData = selection.getMetaData();
-            for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                buffer.add(String.format("%-15s|%-15s%n",
-                        metaData.getColumnName(i), metaData.getColumnTypeName(i))
-                );
-            }
-        }
-        return buffer.toString();
     }
 }
