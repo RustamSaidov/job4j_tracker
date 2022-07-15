@@ -89,7 +89,7 @@ public class SqlTracker implements Store, AutoCloseable {
         try (PreparedStatement statement = cn.prepareStatement("select * from items")) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    items.add(getItemByResultSet(null, resultSet));
+                    items.add(getItemByResultSet(resultSet));
                 }
             }
         } catch (Exception e) {
@@ -105,7 +105,7 @@ public class SqlTracker implements Store, AutoCloseable {
             statement.setString(1, key);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    items.add(getItemByResultSet(null, resultSet));
+                    items.add(getItemByResultSet(resultSet));
                 }
             }
         } catch (Exception e) {
@@ -121,7 +121,7 @@ public class SqlTracker implements Store, AutoCloseable {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    item = getItemByResultSet(null, resultSet);
+                    item = getItemByResultSet(resultSet);
                 }
             }
         } catch (Exception e) {
@@ -130,12 +130,11 @@ public class SqlTracker implements Store, AutoCloseable {
         return item;
     }
 
-    private Item getItemByResultSet(Item item, ResultSet resultSet) throws SQLException {
-        item = new Item(
+    private Item getItemByResultSet( ResultSet resultSet) throws SQLException {
+        return new Item(
                 resultSet.getInt("id"),
                 resultSet.getString("name"),
                 resultSet.getTimestamp("created").toLocalDateTime()
         );
-        return item;
     }
 }
