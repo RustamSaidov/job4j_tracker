@@ -22,8 +22,10 @@ public class DeleteAllAction implements UserAction {
 
     @Override
     public boolean execute(Input input, Store tracker) {
-        List<Item> items = tracker.findAll();
-        items.clear();
+        int l = tracker.findAll().size();
+        for(int i=0; i< l; i++){
+            tracker.delete(i);
+        }
         return true;
     }
 }

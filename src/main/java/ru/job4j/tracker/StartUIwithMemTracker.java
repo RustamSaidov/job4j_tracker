@@ -41,7 +41,7 @@ public class StartUIwithMemTracker {
                 new FindAllAction(output),
                 new FindByIdAction(output),
                 new FindByNameAction(output),
-                new Create1MlnAction(output),
+                new Create100KAction(output),
                 new DeleteAllAction(output),
                 new ExitAction()
         );
