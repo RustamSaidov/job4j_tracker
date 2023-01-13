@@ -18,8 +18,7 @@ import java.util.Properties;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class SqlTrackerTest {
 
@@ -58,7 +57,10 @@ public class SqlTrackerTest {
     public void whenSaveItemAndFindByGeneratedIdThenMustBeTheSame() {
         SqlTracker tracker = new SqlTracker(connection);
         Item item = tracker.add(new Item("item"));
-        assertThat(tracker.findById(item.getId()), is(item));
+        System.out.println(tracker.findById(item.getId()));
+        System.out.println(item);
+        assertEquals(tracker.findById(item.getId()), item);
+//        assertThat(tracker.findById(item.getId()), is(item));
     }
 
     @Test
@@ -83,7 +85,8 @@ public class SqlTrackerTest {
         SqlTracker tracker = new SqlTracker(connection);
         Item item = tracker.add(new Item("item"));
         Item item1 = tracker.add(new Item("item1"));
-        assertThat(tracker.findAll(), is(List.of(item, item1)));
+        assertEquals(tracker.findAll(), List.of(item, item1));
+//        assertThat(tracker.findAll(), is(List.of(item, item1)));
     }
 
     @Test
@@ -92,6 +95,7 @@ public class SqlTrackerTest {
         Item item = tracker.add(new Item("item"));
         Item item1 = tracker.add(new Item("item"));
         Item item2 = tracker.add(new Item("item2"));
-        assertThat(tracker.findByName("item"), is(List.of(item, item1)));
+        assertEquals(tracker.findByName("item"), List.of(item, item1));
+//        assertThat(tracker.findByName("item"), is(List.of(item, item1)));
     }
 }
