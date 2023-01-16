@@ -1,7 +1,7 @@
 package ru.job4j.tracker.store;
 
 import org.junit.Test;
-import ru.job4j.tracker.model.Item;
+import ru.job4j.tracker.Item;
 
 import java.util.List;
 
