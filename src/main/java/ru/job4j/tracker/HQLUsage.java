@@ -39,10 +39,6 @@ public class HQLUsage {
             selectAll(session);
 
 
-
-
-
-
             session.close();
         } finally {
             StandardServiceRegistryBuilder.destroy(registry);
