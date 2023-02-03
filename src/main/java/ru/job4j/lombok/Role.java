@@ -1,6 +1,9 @@
 package ru.job4j.lombok;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Singular;
+import lombok.ToString;
 
 import java.util.List;
 
