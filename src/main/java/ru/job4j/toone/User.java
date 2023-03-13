@@ -43,6 +43,7 @@ public class User {
 
     private String name;
 
+
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
