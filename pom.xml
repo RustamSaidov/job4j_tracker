@@ -13,7 +13,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <docker_db_url_jdbc>${JDBC_URL}</docker_db_url_jdbc>
+<!--        <docker_db_url_jdbc>${JDBC_URL}</docker_db_url_jdbc>-->
+        <docker_db_url_jdbc>jdbc:postgresql://db:5432/tracker</docker_db_url_jdbc>
+
     </properties>
 
     <profiles>
@@ -33,7 +35,8 @@
             <id>production</id>
             <properties>
                 <liquibase.changeLogFile>db/dbchangelog.xml</liquibase.changeLogFile>
-                <liquibase.url>jdbc:postgresql://127.0.0.1:5432/tracker</liquibase.url>
+<!--                <liquibase.url>jdbc:postgresql://127.0.0.1:5432/tracker</liquibase.url>-->
+                <liquibase.url>jdbc:postgresql://db:5432/tracker</liquibase.url>
                 <liquibase.username>postgres</liquibase.username>
                 <liquibase.password>password</liquibase.password>
             </properties>
