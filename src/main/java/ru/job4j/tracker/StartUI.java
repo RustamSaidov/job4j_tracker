@@ -32,7 +32,8 @@ public class StartUI {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-        String url = loadSysEnvIfNullThenConfig("JDBC_URL", "url", config);
+        String url = loadSysEnvIfNullThenConfig("jdbc:postgresql://db:5432/tracker", "url", config);
+        /*String url = loadSysEnvIfNullThenConfig("JDBC_URL", "url", config);*/
         String username = loadSysEnvIfNullThenConfig("JDBC_USERNAME", "username", config);
         String password = loadSysEnvIfNullThenConfig("JDBC_PASSWORD", "password", config);
         String driver = loadSysEnvIfNullThenConfig("JDBC_DRIVER", "driver-class-name", config);
